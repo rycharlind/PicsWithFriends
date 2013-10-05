@@ -100,18 +100,14 @@
                     [[PFUser currentUser] saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
                         
                         [self updateGameFacebookIdsWithUser];
+                        [self activeFacebookSession];
+                        [self pushToMenu];
                         
                     }];
                 
                 }
             
             }];
-            
-            
-            
-            [self activeFacebookSession];
-            
-            [self pushToMenu];
         
             
         } else {

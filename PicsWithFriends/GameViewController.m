@@ -7,12 +7,16 @@
 //
 
 #import "GameViewController.h"
+#import "Constants.h"
 
 @interface GameViewController ()
 
 @end
 
 @implementation GameViewController
+@synthesize game;
+@synthesize buttonWordOne, buttonWordTwo, buttonWordThree, buttonWordFour, buttonWordFive;
+@synthesize buttonAction;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -27,6 +31,34 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
+    
+    [self queryRound];
+}
+
+- (void) queryRound {
+    
+    PFQuery *queryRound = [PFQuery queryWithClassName:kParseClassRound];
+    [queryRound whereKey:@"game" equalTo:self.game];
+    [queryRound orderByDescending:@"createdAt"];
+    [queryRound setLimit:1];
+    
+    [queryRound findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+       
+        NSLog(@"round: %@", objects);
+        
+    }];
+    
+}
+
+- (IBAction) wordButtonTouchedHandler:(id)sender {
+    
+    
+    
+}
+
+- (IBAction) actionButtonTouchedHandler:(id)sender {
+    
+    
 }
 
 - (void)didReceiveMemoryWarning

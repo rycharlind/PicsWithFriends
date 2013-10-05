@@ -7,6 +7,7 @@
 //
 
 #import "MenuViewController.h"
+#import "GameViewController.h"
 #import "Constants.h"
 
 @interface MenuViewController () <UIActionSheetDelegate, FBFriendPickerDelegate, FBViewControllerDelegate>
@@ -48,8 +49,13 @@
     
     self.games = [NSMutableArray new];
     
-    PFQuery *query = [PFQuery queryWithClassName:kParseClassGameUser];
-    [query whereKey:@"user" equalTo:[PFUser currentUser]];
+    PFQuery *queryByUser = [PFQuery queryWithClassName:kParseClassGameUser]; // Query by Current User
+    [queryByUser whereKey:@"user" equalTo:[PFUser currentUser]];
+    
+    PFQuery *queryByFacebookId = [PFQuery queryWithClassName:kParseClassGameUser];
+    [queryByFacebookId whereKey:@"facebookId" equalTo:[[PFUser currentUser] objectForKey:@"facebookId"]]; // Query by FacebookId is current user is not set yet
+     
+    PFQuery *query = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:queryByUser, queryByFacebookId, nil]];
     
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
@@ -150,7 +156,15 @@
     
     if (indexPath.section == 0) {
         
-        [self showFacebookFriendsSelector];
+        [self showFacebookFriendsSelector]; // Callback method from the Facebook Friend picker will call the createGameWithFriends method
+        
+    } else {
+        
+        PFObject *game = [self.games objectAtIndex:indexPath.row];
+        
+        GameViewController *gameViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"game"];
+        gameViewController.game = game;
+        [self.navigationController pushViewController:gameViewController animated:YES];
         
     }
 
@@ -172,12 +186,28 @@
         
             // Add current user to GameUser
             PFObject *gameUser = [PFObject objectWithClassName:kParseClassGameUser];
+            [gameUser setObject:[NSNumber numberWithInt:0] forKey:@"score"];
+            [gameUser setObject:[NSNumber numberWithInt:0] forKey:@"tablePosition"];
+            
             PFRelation *userRelation = [gameUser relationforKey:@"user"];
             [userRelation addObject:[PFUser currentUser]];
             
             // Add game to current user's GameUser object
             PFRelation *gameRelation = [gameUser relationforKey:@"game"];
             [gameRelation addObject:game];
+            
+            // create Round object
+            PFObject *round = [PFObject objectWithClassName:kParseClassRound];
+            
+            // Add current user to as the dealer
+            PFRelation *roundDealerUserRelation = [round relationforKey:@"dealerUser"];
+            [roundDealerUserRelation addObject:[PFUser currentUser]];
+            
+            //Add game relation to the round
+            PFRelation *roundGameRelation = [round relationforKey:@"game"];
+            [roundGameRelation addObject:game];
+            
+            [round saveInBackground]; // Save the initial round
             
             [gameUser saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
                 
@@ -187,8 +217,11 @@
                     
                     NSLog(@"Dealer Added");
                 
+                    int tablePosition = 0;
                     // Iterate through selected friends and add them to GameUser.
                     for (NSDictionary *friend in friends) {
+                        
+                        tablePosition++;
                         
                         NSString *facebookId = [friend objectForKey:@"id"];
                         
@@ -219,6 +252,8 @@
                                 
                             }
                             
+                            [gameUser setObject:[NSNumber numberWithInt:0] forKey:@"score"];
+                            [gameUser setObject:[NSNumber numberWithInt:tablePosition] forKey:@"tablePosition"]; // Set friend table position
                             
                             PFRelation *relation = [gameUser relationforKey:@"game"];
                             [relation addObject:game];
@@ -283,6 +318,7 @@
     [self createGameWithFriends:friendPicker.selection];
     
     [self dismissViewControllerAnimated:YES completion:nil];
+
 }
 
 - (void) facebookViewControllerCancelWasPressed:(id)sender {
@@ -300,6 +336,7 @@
         [arrayFbIds addObject:fbId];
         
     }
+    
     NSString *friendIds = [arrayFbIds componentsJoinedByString:@","];
     
     NSMutableDictionary* params =   [NSMutableDictionary dictionaryWithObjectsAndKeys:friendIds, @"to", nil];

@@ -87,7 +87,7 @@
             </objects>
             <point key="canvasLocation" x="825" y="0.0"/>
         </scene>
-        <!--Game View Controller-->
+        <!--Game View Controller - Game-->
         <scene sceneID="jBh-p6-1FQ">
             <objects>
                 <viewController storyboardIdentifier="game" id="DcW-Mg-bwV" customClass="GameViewController" sceneMemberID="viewController">
@@ -98,9 +98,88 @@
                     <view key="view" contentMode="scaleToFill" id="bdH-pF-emA">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dX7-xD-KZc">
+                                <rect key="frame" x="20" y="82" width="280" height="156"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nST-uD-t4x">
+                                <rect key="frame" x="20" y="265" width="280" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" red="0.58796512850000004" green="0.89495584240000003" blue="0.58927719229999997" alpha="1" colorSpace="calibratedRGB"/>
+                                <state key="normal" title="Word">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="wordButtonTouchedHandler:" destination="DcW-Mg-bwV" eventType="touchUpInside" id="dF3-xq-ZQ4"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vxL-8A-8xG">
+                                <rect key="frame" x="20" y="487" width="280" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" red="0.19558118390000001" green="0.6710707668" blue="0.95771329370000002" alpha="1" colorSpace="calibratedRGB"/>
+                                <state key="normal" title="Action">
+                                    <color key="titleColor" red="1" green="0.99607849120000003" blue="0.99607849120000003" alpha="1" colorSpace="deviceRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                            </button>
+                            <button opaque="NO" tag="1" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gYe-hw-3rC">
+                                <rect key="frame" x="20" y="303" width="280" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" red="0.58796512850000004" green="0.89495584240000003" blue="0.58927719229999997" alpha="1" colorSpace="calibratedRGB"/>
+                                <state key="normal" title="Word">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="wordButtonTouchedHandler:" destination="DcW-Mg-bwV" eventType="touchUpInside" id="MbU-BW-2Pa"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" tag="2" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Z2-hu-W6a">
+                                <rect key="frame" x="20" y="341" width="280" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" red="0.58796512850000004" green="0.89495584240000003" blue="0.58927719229999997" alpha="1" colorSpace="calibratedRGB"/>
+                                <state key="normal" title="Word">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="wordButtonTouchedHandler:" destination="DcW-Mg-bwV" eventType="touchUpInside" id="ICT-FJ-8wm"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" tag="3" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VSu-0N-xnh">
+                                <rect key="frame" x="20" y="379" width="280" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" red="0.58796512850000004" green="0.89495584240000003" blue="0.58927719229999997" alpha="1" colorSpace="calibratedRGB"/>
+                                <state key="normal" title="Word">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="wordButtonTouchedHandler:" destination="DcW-Mg-bwV" eventType="touchUpInside" id="HHq-Wu-2bc"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" tag="4" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZJJ-gc-fFK">
+                                <rect key="frame" x="20" y="417" width="280" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" red="0.58796512850000004" green="0.89495584240000003" blue="0.58927719229999997" alpha="1" colorSpace="calibratedRGB"/>
+                                <state key="normal" title="Word">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="wordButtonTouchedHandler:" destination="DcW-Mg-bwV" eventType="touchUpInside" id="86O-PG-hU3"/>
+                                </connections>
+                            </button>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" id="4ag-gO-wBN"/>
+                    <navigationItem key="navigationItem" title="Game" id="4ag-gO-wBN"/>
+                    <connections>
+                        <outlet property="buttonAction" destination="vxL-8A-8xG" id="4VM-eU-ry5"/>
+                        <outlet property="buttonWordFive" destination="ZJJ-gc-fFK" id="QGF-86-OQu"/>
+                        <outlet property="buttonWordFour" destination="VSu-0N-xnh" id="nPr-mO-vyh"/>
+                        <outlet property="buttonWordOne" destination="nST-uD-t4x" id="9tS-8Y-LWg"/>
+                        <outlet property="buttonWordThree" destination="9Z2-hu-W6a" id="FHn-1V-9qb"/>
+                        <outlet property="buttonWordTwo" destination="gYe-hw-3rC" id="grY-Gt-7cl"/>
+                        <outlet property="imageView" destination="dX7-xD-KZc" id="5zc-D5-4o3"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="HkQ-bc-1T3" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
