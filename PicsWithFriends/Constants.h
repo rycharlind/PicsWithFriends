@@ -20,6 +20,11 @@ static NSString *kParseAppId = @"XMzdxstKDF3DcEu63nyB4F7TSjEO8dt7165emViE";
 // Parse Client Key
 static NSString *kParseClientKey = @"OLenYplqCxoLjfgBYq5KXtOcvUFcLaElZ1Z6kWCw";
 
+// Parse Cloud Url
+//https://api.parse.com/1/functions/setupRoundWords
+
+
+
 
 // Parse Class Key Names
 static NSString *kParseClassUser = @"User";

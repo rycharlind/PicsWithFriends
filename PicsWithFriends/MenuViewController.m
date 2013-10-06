@@ -56,29 +56,13 @@
     [queryByFacebookId whereKey:@"facebookId" equalTo:[[PFUser currentUser] objectForKey:@"facebookId"]]; // Query by FacebookId is current user is not set yet
      
     PFQuery *query = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:queryByUser, queryByFacebookId, nil]];
+    [query includeKey:@"game"];
     
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
-        for (PFObject *gameUser in objects) {
-            
-            PFRelation *gameRelation = [gameUser relationforKey:@"game"];
-            PFQuery *query = [gameRelation query];
-            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-                
-                if (objects.count) {
-                    
-                    NSLog(@"add game");
-                    
-                    [self.games addObject:[objects objectAtIndex:0]];
-                    
-                    [self.tableView reloadData];
-                
-                }
-                
-            }];
-            
-        }
+        self.games = objects;
         
+        [self.tableView reloadData];
         
     }];
 
@@ -142,7 +126,8 @@
     
     } else {
         
-        PFObject *game = [self.games objectAtIndex:indexPath.row];
+        PFObject *gameUser = [self.games objectAtIndex:indexPath.row];
+        PFObject *game = [gameUser objectForKey:@"game"];
         
         cell.textLabel.text = [NSString stringWithFormat:@"Game: %@", game.objectId];
     
@@ -160,7 +145,8 @@
         
     } else {
         
-        PFObject *game = [self.games objectAtIndex:indexPath.row];
+        PFObject *gameUser = [self.games objectAtIndex:indexPath.row];
+        PFObject *game = [gameUser objectForKey:@"game"];
         
         GameViewController *gameViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"game"];
         gameViewController.game = game;
@@ -171,8 +157,6 @@
 }
 
 - (void) createGameWithFriends:(NSArray*)friends {
-    
-    // bug - if the user who is invited is already registered, we should create the User relationship, otherwise store the facebookId and the first time they sign up it will update the gameUser table.
 
     NSLog(@"Creating Game ...");
     
@@ -188,25 +172,15 @@
             PFObject *gameUser = [PFObject objectWithClassName:kParseClassGameUser];
             [gameUser setObject:[NSNumber numberWithInt:0] forKey:@"score"];
             [gameUser setObject:[NSNumber numberWithInt:0] forKey:@"tablePosition"];
-            
-            PFRelation *userRelation = [gameUser relationforKey:@"user"];
-            [userRelation addObject:[PFUser currentUser]];
-            
-            // Add game to current user's GameUser object
-            PFRelation *gameRelation = [gameUser relationforKey:@"game"];
-            [gameRelation addObject:game];
+            [gameUser setObject:game forKey:@"game"];
+            [gameUser setObject:[PFUser currentUser] forKey:@"user"];
             
             // create Round object
             PFObject *round = [PFObject objectWithClassName:kParseClassRound];
             
             // Add current user to as the dealer
-            PFRelation *roundDealerUserRelation = [round relationforKey:@"dealerUser"];
-            [roundDealerUserRelation addObject:[PFUser currentUser]];
-            
-            //Add game relation to the round
-            PFRelation *roundGameRelation = [round relationforKey:@"game"];
-            [roundGameRelation addObject:game];
-            
+            [round setObject:[PFUser currentUser] forKey:@"dealer"];
+            [round setObject:game forKey:@"game"];
             [round saveInBackground]; // Save the initial round
             
             [gameUser saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
@@ -222,6 +196,10 @@
                     for (NSDictionary *friend in friends) {
                         
                         tablePosition++;
+                        
+                        [gameUser setObject:[NSNumber numberWithInt:0] forKey:@"score"];
+                        [gameUser setObject:[NSNumber numberWithInt:tablePosition] forKey:@"tablePosition"]; // Set friend table position
+                        [gameUser setObject:game forKey:@"game"];
                         
                         NSString *facebookId = [friend objectForKey:@"id"];
                         
@@ -241,8 +219,7 @@
                                 NSLog(@"Found FacebookId: %@", facebookId);
                                 
                                 PFUser *user = [objects objectAtIndex:0];
-                                PFRelation *relation = [gameUser relationforKey:@"user"];
-                                [relation addObject:user];
+                                [gameUser setObject:user forKey:@"user"];
                                 
                             } else {
                                 
@@ -251,12 +228,6 @@
                                 [gameUser setObject:facebookId forKey:@"facebookId"];
                                 
                             }
-                            
-                            [gameUser setObject:[NSNumber numberWithInt:0] forKey:@"score"];
-                            [gameUser setObject:[NSNumber numberWithInt:tablePosition] forKey:@"tablePosition"]; // Set friend table position
-                            
-                            PFRelation *relation = [gameUser relationforKey:@"game"];
-                            [relation addObject:game];
                 
                             [gameUser saveInBackground];
                             

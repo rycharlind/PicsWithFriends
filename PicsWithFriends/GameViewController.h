@@ -8,10 +8,14 @@
 
 #import <UIKit/UIKit.h>
 #import <Parse/Parse.h>
+#import "Constants.h"
 
 @interface GameViewController : UIViewController
 
 @property (strong, nonatomic) PFObject *game;
+@property (strong, nonatomic) PFObject *currentRound;
+
+@property Action nextAction;
 
 @property (weak, nonatomic) IBOutlet UIButton *buttonWordOne;
 @property (weak, nonatomic) IBOutlet UIButton *buttonWordTwo;

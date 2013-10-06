@@ -11,7 +11,7 @@
 
 @interface MenuViewController : UITableViewController
 
-@property (strong, nonatomic) NSMutableArray *games;
+@property (strong, nonatomic) NSArray *games;
 
 - (IBAction)optionsButtonTouched:(id)sender;
 
