@@ -16,6 +16,7 @@
 @implementation AppDelegate
 
 @synthesize loginViewController = _loginViewController;
+@synthesize deviceToken;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -67,9 +68,16 @@
 - (void)application:(UIApplication *)application
 didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)newDeviceToken {
     // Store the deviceToken in the current installation and save it to Parse.
+    
+    NSLog(@"Set device token");
+    
+    self.deviceToken = newDeviceToken;
+    
+    /*
     PFInstallation *currentInstallation = [PFInstallation currentInstallation];
     [currentInstallation setDeviceTokenFromData:newDeviceToken];
     [currentInstallation saveInBackground];
+    */
 }
 
 - (void)application:(UIApplication *)application

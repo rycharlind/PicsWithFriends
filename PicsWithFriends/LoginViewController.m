@@ -7,6 +7,7 @@
 //
 
 #import "LoginViewController.h"
+#import "AppDelegate.h"
 #import <Parse/Parse.h>
 #import "MenuViewController.h"
 #import "Constants.h"
@@ -16,7 +17,7 @@
 @end
 
 @implementation LoginViewController
-@synthesize buttonLogin;
+@synthesize buttonLogin, gameUsersCounter;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -41,7 +42,7 @@
 
 - (void) viewDidAppear:(BOOL)animated {
     
-    [self toggleLoginButtonTitle];
+    [self toggleUIControls];
 
 }
 
@@ -70,7 +71,7 @@
 - (void) login {
     
     // The permissions requested from the user
-    NSArray *permissionsArray = @[@"publish_actions"];
+    NSArray *permissionsArray = @[@"user_about_me"];
     
     [PFFacebookUtils initializeFacebook];
     
@@ -91,6 +92,13 @@
             
             NSLog(@"User with facebook signed up and logged in!");
             
+            AppDelegate *appDelegate = (AppDelegate*)[[UIApplication sharedApplication] delegate];
+            
+            PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+            [currentInstallation setDeviceTokenFromData:appDelegate.deviceToken];
+            [currentInstallation setObject:user forKey:@"user"];
+            [currentInstallation saveInBackground];
+            
             [FBRequestConnection startForMeWithCompletionHandler:^(FBRequestConnection *connection, id result, NSError *error) {
                 
                 if (!error) {
@@ -101,7 +109,7 @@
                         
                         [self updateGameFacebookIdsWithUser];
                         [self activeFacebookSession];
-                        [self pushToMenu];
+                        
                         
                     }];
                 
@@ -127,6 +135,8 @@
     
     NSLog(@"update fbIDs");
     
+    self.gameUsersCounter = 0;
+    
     PFQuery *queryGameUser = [PFQuery queryWithClassName:kParseClassGameUser];
     
     [queryGameUser whereKey:@"facebookId" equalTo:[[PFUser currentUser] objectForKey:@"facebookId"]];
@@ -135,11 +145,25 @@
         
         for (PFObject *gameUser in objects) {
             
-            PFRelation *userRelation = [gameUser relationforKey:@"user"];
-            [userRelation addObject:[PFUser currentUser]];
+            [gameUser setObject:[PFUser currentUser] forKey:@"user"];
             
-            //[gameUser setObject:userRelation forKey:@"user"];
-            [gameUser saveInBackground];
+            [gameUser saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                
+                if (success) {
+                
+                    self.gameUsersCounter++;
+                    
+                    if (self.gameUsersCounter == objects.count) {
+                        
+                        [self pushToMenu];
+                        
+                    }
+                    
+                }
+                
+            }];
+            
+            
             
         }
         
@@ -147,15 +171,23 @@
     
 }
 
-- (void) toggleLoginButtonTitle {
+- (void) toggleUIControls {
     
     if ([self userLoggedIn]) {
         
         [self.buttonLogin setTitle:@"Logout" forState:UIControlStateNormal];
+        self.imageViewProfPic.hidden = NO;
+        self.labelName.hidden = NO;
+        
+        [self getMeFacebookInfo];
     
     } else {
         
         [self.buttonLogin setTitle:@"Login" forState:UIControlStateNormal];
+        self.imageViewProfPic.hidden = YES;
+        self.labelName.hidden = YES;
+        self.imageViewProfPic.image = nil;
+        self.labelName.text = nil;
     
     }
     
@@ -198,6 +230,36 @@
     }
 }
 
+- (void) getMeFacebookInfo {
+    
+    // Send request to Facebook
+    FBRequest *request = [FBRequest requestForMe];
+    [request startWithCompletionHandler:^(FBRequestConnection *connection, id result, NSError *error) {
+        
+        // handle response
+        if (!error) {
+            
+            NSDictionary *userData = (NSDictionary *)result;
+            
+            NSString *facebookID = userData[@"id"];
+            
+            NSURL *pictureURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://graph.facebook.com/%@/picture?type=large&return_ssl_resources=1", facebookID]];
+            
+            [self.imageViewProfPic setImage:[UIImage imageWithData:[NSData dataWithContentsOfURL:pictureURL]]];
+            
+            if (userData[@"name"]) {
+                self.labelName.text = userData[@"name"];
+            }
+            
+        
+        }
+        
+    
+    }];
+    
+
+}
+
 
 - (void) pushToMenu {
     
@@ -210,7 +272,7 @@
     
     [PFUser logOut]; // Log out
     
-    [self toggleLoginButtonTitle];
+    [self toggleUIControls];
 
 }
 

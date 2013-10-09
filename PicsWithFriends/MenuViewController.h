@@ -13,6 +13,9 @@
 
 @property (strong, nonatomic) NSArray *games;
 
+@property int invitedFriendsCounter;
+
+
 - (IBAction)optionsButtonTouched:(id)sender;
 
 @end

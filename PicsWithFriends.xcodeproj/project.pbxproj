@@ -17,6 +17,12 @@
 		542B1C6817FB81BC0087C5D1 /* MenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 542B1C6717FB81BC0087C5D1 /* MenuViewController.m */; };
 		542B1C6B17FB81E30087C5D1 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 542B1C6A17FB81E30087C5D1 /* GameViewController.m */; };
 		542B1C6D17FBA0DB0087C5D1 /* FBUserSettingsViewResources.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 542B1C6C17FBA0DB0087C5D1 /* FBUserSettingsViewResources.bundle */; };
+		542B1C741801D0D20087C5D1 /* PagerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 542B1C731801D0D20087C5D1 /* PagerViewController.m */; };
+		542B1C771801D0DB0087C5D1 /* CustomPagerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 542B1C761801D0DB0087C5D1 /* CustomPagerViewController.m */; };
+		54A989001803B9F200303BFE /* UzysSMMenuItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 54A988FA1803B9F200303BFE /* UzysSMMenuItem.m */; };
+		54A989011803B9F200303BFE /* UzysSMMenuItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 54A988FC1803B9F200303BFE /* UzysSMMenuItemView.m */; };
+		54A989021803B9F200303BFE /* UzysSMMenuItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 54A988FD1803B9F200303BFE /* UzysSMMenuItemView.xib */; };
+		54A989031803B9F200303BFE /* UzysSlideMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = 54A988FF1803B9F200303BFE /* UzysSlideMenu.m */; };
 		54C2663417F68B6000C22699 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C2663317F68B6000C22699 /* Foundation.framework */; };
 		54C2663617F68B6000C22699 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C2663517F68B6000C22699 /* CoreGraphics.framework */; };
 		54C2663817F68B6000C22699 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C2663717F68B6000C22699 /* UIKit.framework */; };
@@ -66,6 +72,18 @@
 		542B1C6917FB81E30087C5D1 /* GameViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameViewController.h; sourceTree = "<group>"; };
 		542B1C6A17FB81E30087C5D1 /* GameViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GameViewController.m; sourceTree = "<group>"; };
 		542B1C6C17FBA0DB0087C5D1 /* FBUserSettingsViewResources.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = FBUserSettingsViewResources.bundle; sourceTree = "<group>"; };
+		542B1C721801D0D20087C5D1 /* PagerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PagerViewController.h; sourceTree = "<group>"; };
+		542B1C731801D0D20087C5D1 /* PagerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PagerViewController.m; sourceTree = "<group>"; };
+		542B1C751801D0DB0087C5D1 /* CustomPagerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomPagerViewController.h; sourceTree = "<group>"; };
+		542B1C761801D0DB0087C5D1 /* CustomPagerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomPagerViewController.m; sourceTree = "<group>"; };
+		54A988F81803B9F200303BFE /* ARCHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARCHelper.h; sourceTree = "<group>"; };
+		54A988F91803B9F200303BFE /* UzysSMMenuItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UzysSMMenuItem.h; sourceTree = "<group>"; };
+		54A988FA1803B9F200303BFE /* UzysSMMenuItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UzysSMMenuItem.m; sourceTree = "<group>"; };
+		54A988FB1803B9F200303BFE /* UzysSMMenuItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UzysSMMenuItemView.h; sourceTree = "<group>"; };
+		54A988FC1803B9F200303BFE /* UzysSMMenuItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UzysSMMenuItemView.m; sourceTree = "<group>"; };
+		54A988FD1803B9F200303BFE /* UzysSMMenuItemView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = UzysSMMenuItemView.xib; sourceTree = "<group>"; };
+		54A988FE1803B9F200303BFE /* UzysSlideMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UzysSlideMenu.h; sourceTree = "<group>"; };
+		54A988FF1803B9F200303BFE /* UzysSlideMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UzysSlideMenu.m; sourceTree = "<group>"; };
 		54C2663017F68B6000C22699 /* PicsWithFriends.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PicsWithFriends.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C2663317F68B6000C22699 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		54C2663517F68B6000C22699 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -138,6 +156,32 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		542B1C711801D09F0087C5D1 /* Tutorial */ = {
+			isa = PBXGroup;
+			children = (
+				542B1C751801D0DB0087C5D1 /* CustomPagerViewController.h */,
+				542B1C761801D0DB0087C5D1 /* CustomPagerViewController.m */,
+				542B1C721801D0D20087C5D1 /* PagerViewController.h */,
+				542B1C731801D0D20087C5D1 /* PagerViewController.m */,
+			);
+			name = Tutorial;
+			sourceTree = "<group>";
+		};
+		54A988F71803B9D400303BFE /* UzysMenu */ = {
+			isa = PBXGroup;
+			children = (
+				54A988F81803B9F200303BFE /* ARCHelper.h */,
+				54A988F91803B9F200303BFE /* UzysSMMenuItem.h */,
+				54A988FA1803B9F200303BFE /* UzysSMMenuItem.m */,
+				54A988FB1803B9F200303BFE /* UzysSMMenuItemView.h */,
+				54A988FC1803B9F200303BFE /* UzysSMMenuItemView.m */,
+				54A988FD1803B9F200303BFE /* UzysSMMenuItemView.xib */,
+				54A988FE1803B9F200303BFE /* UzysSlideMenu.h */,
+				54A988FF1803B9F200303BFE /* UzysSlideMenu.m */,
+			);
+			name = UzysMenu;
+			sourceTree = "<group>";
+		};
 		54C2662717F68B6000C22699 = {
 			isa = PBXGroup;
 			children = (
@@ -193,6 +237,8 @@
 				54C2667B17FA46B800C22699 /* Login */,
 				54C2667C17FA46C500C22699 /* Menu */,
 				54C2667D17FA46CA00C22699 /* Game */,
+				542B1C711801D09F0087C5D1 /* Tutorial */,
+				54A988F71803B9D400303BFE /* UzysMenu */,
 				54C2664E17F68B6000C22699 /* Images.xcassets */,
 				54C2663A17F68B6000C22699 /* Supporting Files */,
 			);
@@ -354,6 +400,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				54C2664A17F68B6000C22699 /* Main_iPad.storyboard in Resources */,
+				54A989021803B9F200303BFE /* UzysSMMenuItemView.xib in Resources */,
 				54C2664F17F68B6000C22699 /* Images.xcassets in Resources */,
 				54C2664717F68B6000C22699 /* Main_iPhone.storyboard in Resources */,
 				54C2663E17F68B6000C22699 /* InfoPlist.strings in Resources */,
@@ -378,8 +425,13 @@
 			files = (
 				542B1C6B17FB81E30087C5D1 /* GameViewController.m in Sources */,
 				54C2664417F68B6000C22699 /* AppDelegate.m in Sources */,
+				54A989001803B9F200303BFE /* UzysSMMenuItem.m in Sources */,
+				542B1C771801D0DB0087C5D1 /* CustomPagerViewController.m in Sources */,
 				54C2664017F68B6000C22699 /* main.m in Sources */,
+				54A989031803B9F200303BFE /* UzysSlideMenu.m in Sources */,
 				54C2668217FA476200C22699 /* LoginViewController.m in Sources */,
+				54A989011803B9F200303BFE /* UzysSMMenuItemView.m in Sources */,
+				542B1C741801D0D20087C5D1 /* PagerViewController.m in Sources */,
 				542B1C6817FB81BC0087C5D1 /* MenuViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

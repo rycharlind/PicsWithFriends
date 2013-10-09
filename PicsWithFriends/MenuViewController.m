@@ -15,7 +15,11 @@
 @end
 
 @implementation MenuViewController
-@synthesize games;
+@synthesize games, invitedFriendsCounter;
+
+
+// Ideas
+// Display who invited you to the game (or basically who created it) - this way the user knows who sent the invite even if they did not receive it from facebook
 
 - (id)initWithStyle:(UITableViewStyle)style
 {
@@ -57,6 +61,7 @@
      
     PFQuery *query = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:queryByUser, queryByFacebookId, nil]];
     [query includeKey:@"game"];
+    [query orderByDescending:@"createdAt"];
     
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
@@ -148,17 +153,25 @@
         PFObject *gameUser = [self.games objectAtIndex:indexPath.row];
         PFObject *game = [gameUser objectForKey:@"game"];
         
-        GameViewController *gameViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"game"];
-        gameViewController.game = game;
-        [self.navigationController pushViewController:gameViewController animated:YES];
+        [self pushToGameView:game];
         
     }
 
 }
 
-- (void) createGameWithFriends:(NSArray*)friends {
+- (void) pushToGameView:(PFObject*)game {
+    
+    GameViewController *gameViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"game"];
+    gameViewController.game = game;
+    [self.navigationController pushViewController:gameViewController animated:YES];
+
+}
+
+- (void) createGameWtihFriends:(NSArray*)friends {
 
     NSLog(@"Creating Game ...");
+    
+    self.invitedFriendsCounter = 0;
     
     // Create Game object and save
     PFObject *game = [PFObject objectWithClassName:kParseClassGame];
@@ -167,11 +180,13 @@
         if (success) {
             
             NSLog(@"Game Created");
+            
+            //self.createdGame = game;
         
             // Add current user to GameUser
             PFObject *gameUser = [PFObject objectWithClassName:kParseClassGameUser];
             [gameUser setObject:[NSNumber numberWithInt:0] forKey:@"score"];
-            [gameUser setObject:[NSNumber numberWithInt:0] forKey:@"tablePosition"];
+            [gameUser setObject:[NSNumber numberWithInt:1] forKey:@"tablePosition"];
             [gameUser setObject:game forKey:@"game"];
             [gameUser setObject:[PFUser currentUser] forKey:@"user"];
             
@@ -191,48 +206,69 @@
                     
                     NSLog(@"Dealer Added");
                 
-                    int tablePosition = 0;
+                    int tablePosition = 1;
                     // Iterate through selected friends and add them to GameUser.
                     for (NSDictionary *friend in friends) {
                         
                         tablePosition++;
                         
-                        [gameUser setObject:[NSNumber numberWithInt:0] forKey:@"score"];
-                        [gameUser setObject:[NSNumber numberWithInt:tablePosition] forKey:@"tablePosition"]; // Set friend table position
-                        [gameUser setObject:game forKey:@"game"];
+                        PFObject *invitedGameUser = [PFObject objectWithClassName:kParseClassGameUser];
+                        
+                        [invitedGameUser setObject:[NSNumber numberWithInt:0] forKey:@"score"];
+                        [invitedGameUser setObject:[NSNumber numberWithInt:tablePosition] forKey:@"tablePosition"]; // Set friend table position
+                        [invitedGameUser setObject:game forKey:@"game"];
                         
                         NSString *facebookId = [friend objectForKey:@"id"];
                         
                         NSLog(@"Check FacebookId: %@", facebookId);
                         
-                        PFQuery *queryUser = [PFUser query]; //[PFQuery queryWithClassName:kParseClassUser];
+                        PFQuery *queryUser = [PFUser query];
                         [queryUser whereKey:@"facebookId" containsString:facebookId];
                         
                         [queryUser findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                             
                             NSLog(@"User Objects: %@", objects);
-                            
-                            PFObject *gameUser = [PFObject objectWithClassName:kParseClassGameUser];
                         
                             if (objects.count) { // facebookId found
                                 
                                 NSLog(@"Found FacebookId: %@", facebookId);
                                 
                                 PFUser *user = [objects objectAtIndex:0];
-                                [gameUser setObject:user forKey:@"user"];
+                                [invitedGameUser setObject:user forKey:@"user"];
+                                
+                                PFQuery *pushQuery = [PFInstallation query];
+                                [pushQuery whereKey:@"user" equalTo:user];
+                                [PFPush sendPushMessageToQueryInBackground:pushQuery withMessage:@"You have been invited to play"];
                                 
                             } else {
                                 
                                 NSLog(@"Did Not Find FacebookId: %@", facebookId);
                                 
-                                [gameUser setObject:facebookId forKey:@"facebookId"];
+                                [invitedGameUser setObject:facebookId forKey:@"facebookId"];
                                 
                             }
                 
-                            [gameUser saveInBackground];
+                            [invitedGameUser saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                               
+                                if (success) {
+                                    
+                                    self.invitedFriendsCounter++;
+                                    
+                                    NSLog(@"invitedFriendsCount: %d", self.invitedFriendsCounter);
+                                    
+                                    if (self.invitedFriendsCounter == friends.count) {
+                                        
+                                        NSLog(@"pushing game id %@", game.objectId);
+                                        
+                                        [self pushToGameView:game];
+                                    
+                                    }
+                                    
+                                }
+                                
+                            }];
                             
                         }];
-                        
                         
                     }
                 
@@ -286,7 +322,7 @@
     
     NSLog(@"%@", friendPicker.selection);
     
-    [self createGameWithFriends:friendPicker.selection];
+    [self createGameWtihFriends:friendPicker.selection];
     
     [self dismissViewControllerAnimated:YES completion:nil];
 

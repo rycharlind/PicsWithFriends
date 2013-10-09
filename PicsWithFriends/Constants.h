@@ -28,8 +28,10 @@ static NSString *kParseClientKey = @"OLenYplqCxoLjfgBYq5KXtOcvUFcLaElZ1Z6kWCw";
 
 // Parse Class Key Names
 static NSString *kParseClassUser = @"User";
-static NSString *kParseClassDictionary = @"Dictionary";
+static NSString *kParseClassWord = @"Word";
 static NSString *kParseClassGame = @"Game";
 static NSString *kParseClassGameUser = @"GameUsers";
 static NSString *kParseClassRound = @"Round";
 static NSString *kParseClassRoundUser = @"RoundUsers";
+static NSString *kParseClassRoundWords = @"RoundWords";
+static NSString *kParseClassRoundWordSubmitted = @"RoundWordSubmitted";

@@ -13,20 +13,23 @@
 @interface GameViewController : UIViewController
 
 @property (strong, nonatomic) PFObject *game;
+@property (strong, nonatomic) NSArray *gameUsers;
+@property (strong, nonatomic) PFObject *currentGameUser;
+@property (strong, nonatomic) NSArray *currentGameUserWords;
 @property (strong, nonatomic) PFObject *currentRound;
+@property (strong, nonatomic) NSArray *currentRoundWordsSubmitted;
+@property (strong, nonatomic) PFObject *selectedWord;
+@property (strong, nonatomic) PFObject *currentGameUserWinner;
+
+@property int roundWordsCounter;
 
 @property Action nextAction;
 
-@property (weak, nonatomic) IBOutlet UIButton *buttonWordOne;
-@property (weak, nonatomic) IBOutlet UIButton *buttonWordTwo;
-@property (weak, nonatomic) IBOutlet UIButton *buttonWordThree;
-@property (weak, nonatomic) IBOutlet UIButton *buttonWordFour;
-@property (weak, nonatomic) IBOutlet UIButton *buttonWordFive;
-
-@property (weak, nonatomic) IBOutlet UIButton *buttonAction;
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *buttonAction;
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 
-- (IBAction) wordButtonTouchedHandler:(id)sender;
 - (IBAction) actionButtonTouchedHandler:(id)sender;
+
+- (IBAction)refresh:(id)sender;
 
 @end

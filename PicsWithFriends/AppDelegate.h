@@ -14,5 +14,6 @@
 
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) LoginViewController *loginViewController;
+@property (strong, nonatomic) NSData *deviceToken;
 
 @end
