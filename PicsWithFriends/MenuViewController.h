@@ -13,6 +13,8 @@
 
 @property (strong, nonatomic) NSArray *games;
 
+@property BOOL isLoading;
+
 @property int invitedFriendsCounter;
 
 

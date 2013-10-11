@@ -16,6 +16,7 @@
 
 @implementation MenuViewController
 @synthesize games, invitedFriendsCounter;
+@synthesize isLoading;
 
 
 // Ideas
@@ -35,12 +36,6 @@
 {
     [super viewDidLoad];
 
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
- 
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-
 }
 
 - (void) viewDidAppear:(BOOL)animated {
@@ -50,6 +45,8 @@
 }
 
 - (void) queryGames {
+    
+    self.isLoading = YES;
     
     self.games = [NSMutableArray new];
     
@@ -68,6 +65,8 @@
         self.games = objects;
         
         [self.tableView reloadData];
+        
+        self.isLoading = NO;
         
     }];
 
@@ -138,22 +137,25 @@
     
     }
     
-    
     return cell;
 }
 
 - (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    if (indexPath.section == 0) {
-        
-        [self showFacebookFriendsSelector]; // Callback method from the Facebook Friend picker will call the createGameWithFriends method
-        
-    } else {
-        
-        PFObject *gameUser = [self.games objectAtIndex:indexPath.row];
-        PFObject *game = [gameUser objectForKey:@"game"];
-        
-        [self pushToGameView:game];
+    if (!self.isLoading) {
+    
+        if (indexPath.section == 0) {
+            
+            [self showFacebookFriendsSelector]; // Callback method from the Facebook Friend picker will call the createGameWithFriends method
+            
+        } else {
+            
+            PFObject *gameUser = [self.games objectAtIndex:indexPath.row];
+            PFObject *game = [gameUser objectForKey:@"game"];
+            
+            [self pushToGameView:game];
+            
+        }
         
     }
 
@@ -189,12 +191,14 @@
             [gameUser setObject:[NSNumber numberWithInt:1] forKey:@"tablePosition"];
             [gameUser setObject:game forKey:@"game"];
             [gameUser setObject:[PFUser currentUser] forKey:@"user"];
+            [gameUser setObject:[[PFUser currentUser] objectForKey:@"name"] forKey:@"name"];
+            [gameUser setObject:[[PFUser currentUser] objectForKey:@"facebookId"] forKey:@"facebookId"];
             
             // create Round object
             PFObject *round = [PFObject objectWithClassName:kParseClassRound];
             
             // Add current user to as the dealer
-            [round setObject:[PFUser currentUser] forKey:@"dealer"];
+            [round setObject:gameUser forKey:@"dealer"];
             [round setObject:game forKey:@"game"];
             [round saveInBackground]; // Save the initial round
             
@@ -219,6 +223,10 @@
                         [invitedGameUser setObject:game forKey:@"game"];
                         
                         NSString *facebookId = [friend objectForKey:@"id"];
+                        NSString *facebookName = [friend objectForKey:@"name"];
+                        
+                        [invitedGameUser setObject:facebookId forKey:@"facebookId"];
+                        [invitedGameUser setObject:facebookName forKey:@"name"];
                         
                         NSLog(@"Check FacebookId: %@", facebookId);
                         
@@ -239,12 +247,6 @@
                                 PFQuery *pushQuery = [PFInstallation query];
                                 [pushQuery whereKey:@"user" equalTo:user];
                                 [PFPush sendPushMessageToQueryInBackground:pushQuery withMessage:@"You have been invited to play"];
-                                
-                            } else {
-                                
-                                NSLog(@"Did Not Find FacebookId: %@", facebookId);
-                                
-                                [invitedGameUser setObject:facebookId forKey:@"facebookId"];
                                 
                             }
                 

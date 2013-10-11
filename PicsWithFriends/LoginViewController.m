@@ -105,6 +105,7 @@
                     
                     // Store the current user's Facebook ID on the user
                     [[PFUser currentUser] setObject:[result objectForKey:@"id"] forKey:@"facebookId"];
+                    [[PFUser currentUser] setObject:[result objectForKey:@"name"] forKey:@"name"];
                     [[PFUser currentUser] saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
                         
                         [self updateGameFacebookIdsWithUser];
@@ -122,9 +123,9 @@
             
             NSLog(@"User with facebook logged in!");
             
+            [self updateGameFacebookIdsWithUser];
             [self activeFacebookSession];
             
-            [self pushToMenu];
         }
         
     }];

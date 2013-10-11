@@ -35,3 +35,6 @@ static NSString *kParseClassRound = @"Round";
 static NSString *kParseClassRoundUser = @"RoundUsers";
 static NSString *kParseClassRoundWords = @"RoundWords";
 static NSString *kParseClassRoundWordSubmitted = @"RoundWordSubmitted";
+
+static NSString *kFacebookGraph = @"http://graph.facebook.com";
+static NSString *kFacebookGraphPictureSize100x100 = @"height=100&width=100";
