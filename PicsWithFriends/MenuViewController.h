@@ -9,15 +9,17 @@
 #import <UIKit/UIKit.h>
 #import <Parse/Parse.h>
 
-@interface MenuViewController : UITableViewController
+@interface MenuViewController : UIViewController
 
-@property (strong, nonatomic) NSArray *games;
+@property (strong, nonatomic) NSMutableArray *games;
+@property (weak, nonatomic) IBOutlet UITableView *tableView;
 
 @property BOOL isLoading;
 
 @property int invitedFriendsCounter;
-
+@property int gamesCounter;
 
 - (IBAction)optionsButtonTouched:(id)sender;
+- (IBAction) createGameButtonHandler:(id)sender;
 
 @end

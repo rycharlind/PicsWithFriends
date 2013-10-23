@@ -11,13 +11,15 @@
 @interface LoginViewController : UIViewController
 
 @property (weak, nonatomic) IBOutlet UIButton *buttonLogin;
+@property (weak, nonatomic) IBOutlet UIButton *buttonGames;
 @property (weak, nonatomic) IBOutlet UIImageView *imageViewProfPic;
-@property (weak, nonatomic) IBOutlet UILabel *labelName;
 
 @property int gameUsersCounter;
 
 
 - (IBAction) loginButtonTouchHandler:(id)sender;
 - (IBAction) gamesButtonTouchHandler:(id)sender;
+
+- (void) updateUIControlsForIsLoggedIn:(BOOL)isLoggedIn;
 
 @end

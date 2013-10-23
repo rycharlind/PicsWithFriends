@@ -17,7 +17,7 @@
 @end
 
 @implementation LoginViewController
-@synthesize buttonLogin, gameUsersCounter;
+@synthesize buttonLogin, buttonGames, gameUsersCounter;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -28,21 +28,36 @@
     return self;
 }
 
-- (void)viewDidLoad
+- (void) viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     
+    self.navigationController.navigationBar.hidden = YES;
     
     if ([self userLoggedIn]) {
         
+        NSLog(@"LoginView - User Logged In");
+        
         [self activeFacebookSession];
+        [self pushToMenu];
+        
     }
+
 }
 
 - (void) viewDidAppear:(BOOL)animated {
     
-    [self toggleUIControls];
+    
+    if ([self userLoggedIn]) {
+        
+        [self updateUIControlsForIsLoggedIn:YES];
+    
+    } else {
+        
+        [self updateUIControlsForIsLoggedIn:NO];
+        
+    }
 
 }
 
@@ -123,8 +138,9 @@
             
             NSLog(@"User with facebook logged in!");
             
-            [self updateGameFacebookIdsWithUser];
             [self activeFacebookSession];
+            [self updateUIControlsForIsLoggedIn:YES];
+            [self updateGameFacebookIdsWithUser];
             
         }
         
@@ -172,23 +188,23 @@
     
 }
 
-- (void) toggleUIControls {
+- (void) updateUIControlsForIsLoggedIn:(BOOL)isLoggedIn {
     
-    if ([self userLoggedIn]) {
+    if (isLoggedIn) {
         
         [self.buttonLogin setTitle:@"Logout" forState:UIControlStateNormal];
+        self.buttonGames.hidden = NO;
         self.imageViewProfPic.hidden = NO;
-        self.labelName.hidden = NO;
         
         [self getMeFacebookInfo];
     
     } else {
         
         [self.buttonLogin setTitle:@"Login" forState:UIControlStateNormal];
+        self.buttonGames.hidden = YES;
         self.imageViewProfPic.hidden = YES;
-        self.labelName.hidden = YES;
         self.imageViewProfPic.image = nil;
-        self.labelName.text = nil;
+        self.navigationItem.title = @"Log In with Facebook";
     
     }
     
@@ -249,15 +265,13 @@
             [self.imageViewProfPic setImage:[UIImage imageWithData:[NSData dataWithContentsOfURL:pictureURL]]];
             
             if (userData[@"name"]) {
-                self.labelName.text = userData[@"name"];
+                self.navigationItem.title = userData[@"name"];
             }
             
         
         }
-        
     
     }];
-    
 
 }
 
@@ -272,8 +286,8 @@
 - (void) logout {
     
     [PFUser logOut]; // Log out
-    
-    [self toggleUIControls];
+
+    [self updateUIControlsForIsLoggedIn:NO];
 
 }
 

@@ -23,11 +23,13 @@
 
 @implementation GameViewController
 @synthesize tableView;
+@synthesize imageWrapperView;
 @synthesize game, gameUsers, currentRound, currentGameUserWords, currentRoundWordsSubmitted, roundWordsCounter, selectedWord, currentGameUser, currentGameUserWinner, currentRoundDealer;
 @synthesize buttonAction;
 @synthesize wordsMenu;
 @synthesize nextAction;
 @synthesize uploadImageView, labelUploadImageStatus, progressView, imageViewCheckmark;
+@synthesize isLoading;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -48,14 +50,18 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     
+    NSLog(@"viewDidLoad");
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(getGameStatus) name:kPostNoteGetStatus object:nil];
+    
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:60 target:self selector:@selector(getGameStatus) userInfo:nil repeats:YES];
+    
     self.uploadImageView.layer.cornerRadius = 10.0;
 
     UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageTapped:)];
     [self.imageView addGestureRecognizer:tapGesture];
     
     self.gameUsers = [NSMutableArray new];
-    
-    self.wordsMenu.hidden = YES;
     
     [self getGameStatus];
 }
@@ -64,17 +70,41 @@
     
     NSLog(@"getGameStatusForGame: %@", self.game);
     
-    [self queryGameUsers];
+    self.buttonAction.enabled = NO;
+    
+    self.gameUsers = nil;
+    self.currentRound = nil;
+    self.currentGameUserWords = nil;
+    self.currentRoundWordsSubmitted = nil;
+    self.currentGameUser = nil;
+    self.currentGameUserWinner = nil;
+    self.currentRoundDealer = nil;
+    
+    if (!self.isLoading) {
+    
+        [self queryGameUsers];
+        
+    }
+    
     
 }
 
 - (void) queryGameUsers {
+    
+    self.isLoading = YES;
     
     PFQuery *queryGameUsers = [PFQuery queryWithClassName:kParseClassGameUser];
     [queryGameUsers whereKey:@"game" equalTo:self.game];
     [queryGameUsers orderByAscending:@"tablePosition"];
     
     [queryGameUsers findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+        if (error) {
+            
+            NSLog(@"%@", [error localizedDescription]);
+            
+            self.isLoading = NO;
+        }
         
         self.gameUsers = [objects mutableCopy];
         
@@ -110,6 +140,14 @@
     [queryRound setLimit:1];
     
     [queryRound findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+        if (error) {
+            
+            NSLog(@"%@", [error localizedDescription]);
+            
+            self.isLoading = NO;
+        }
+        
         
         if (objects.count) {
         
@@ -156,16 +194,18 @@
         
         NSLog(@"currentRoundWordsSubmitted: %@", objects);
         
+        
         if (objects.count) {
             
             self.currentRoundWordsSubmitted = objects;
         
         }
         
-        
         [self getGameStatusesForEachUser];
         [self.tableView reloadData];
         [self updateViewForCurrentStatus];
+        
+        self.isLoading = NO;
         
     }];
 
@@ -175,8 +215,11 @@
     
     NSLog(@"queryWordsForCurrentUser");
     
+    self.isLoading = YES;
+    
     PFQuery *queryRoundWords = [PFQuery queryWithClassName:kParseClassRoundWords];
     [queryRoundWords whereKey:@"gameUser" equalTo:self.currentGameUser];
+    [queryRoundWords whereKey:@"round" equalTo:self.currentRound];
     
     [queryRoundWords findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
        
@@ -199,6 +242,8 @@
                     [self showWordsMenu];
                     
                 }
+                
+                self.isLoading = NO;
                 
             }];
         }
@@ -325,7 +370,7 @@
             
             self.nextAction = CHOOSEPHOTO;
             
-            self.imageView.hidden = YES;
+            self.imageWrapperView.hidden = YES;
             self.tableView.hidden = NO;
             
         }
@@ -371,7 +416,7 @@
                 
                 self.nextAction = SUBMITWORD;
                 
-                self.imageView.hidden = NO;
+                self.imageWrapperView.hidden = NO;
                 self.tableView.hidden = YES;
                 
                 [self queryWordsForCurrentGameUser];
@@ -383,7 +428,7 @@
             
             self.nextAction = WAITING;
             
-            self.imageView.hidden = YES;
+            self.imageWrapperView.hidden = YES;
             self.tableView.hidden = NO;
             self.wordsMenu.hidden = YES;
             
@@ -397,13 +442,15 @@
 
 - (void) getImage:(PFFile*)image {
     
+    [self.imageView setImage:nil];
+    
     [image getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
         
         NSLog(@"Got Image Data");
         
         UIImage *pic = [UIImage imageWithData:data];
         [self.imageView setImage:pic];
-        self.imageView.hidden = NO;
+        self.imageWrapperView.hidden = NO;
         self.tableView.hidden = YES;
         self.uploadImageView.hidden = YES;
         
@@ -416,6 +463,8 @@
 }
 
 - (void) updateActionButton {
+    
+    self.buttonAction.enabled = YES;
     
     switch (self.nextAction) {
             
@@ -443,34 +492,39 @@
 }
 
 - (IBAction) actionButtonTouchedHandler:(id)sender {
+    
+    self.buttonAction.enabled = NO;
+    
+        switch (self.nextAction) {
+            case WAITING:
+                [self getGameStatus];
+                break;
+                
+            case CHOOSEPHOTO:
+                [self choosePhoto];
+                break;
+                
+            case SUBMITPHOTO:
+                [self submitPhoto];
+                break;
+                
+            case SUBMITANSWER:
+                [self submitSelectedAnswer];
+                break;
+                
+            case SUBMITWORD:
+                [self submitSelectedWord];
+                break;
+        
+        }
+     
 
-    switch (self.nextAction) {
-        case WAITING:
-            [self getGameStatus];
-            break;
-            
-        case CHOOSEPHOTO:
-            [self choosePhoto];
-            break;
-            
-        case SUBMITPHOTO:
-            [self submitPhoto];
-            break;
-            
-        case SUBMITANSWER:
-            [self submitSelectedAnswer];
-            break;
-            
-        case SUBMITWORD:
-            [self submitSelectedWord];
-            break;
-    
-    }
-    
 }
 
 #define NUMBEROFWORDS 5
 - (void) createNewRound {
+    
+    self.isLoading = YES;
         
     // (New) Round - Game
     PFObject *round = [PFObject objectWithClassName:kParseClassRound];
@@ -478,7 +532,6 @@
     
     PFObject *currentDealer = [self.currentRound objectForKey:@"dealer"];
     PFObject  *nextDealer;
-    
     
     // Get the current dealer's table position
     int nextDealerTablePosition;
@@ -504,7 +557,6 @@
     // Get the next dealer
     for (PFObject *gameUser in self.gameUsers) {
         
-        //PFUser *user = [gameUser objectForKey:@"user"];
         NSNumber *tablePosition = [gameUser objectForKey:@"tablePosition"];
         int userTablePosition = [tablePosition intValue];
         
@@ -520,9 +572,27 @@
     
     [round saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
         
-        self.currentRound = round;
+        if (error) {
+            
+            NSLog(@"%@", [error localizedDescription]);
+            
+            self.isLoading = NO;
+        }
         
-        [self createWordsForCurrentRound];
+        if (success) {
+        
+            self.currentRound = round;
+            
+            PFUser *dealerUser = [nextDealer objectForKey:@"user"];
+            
+            PFQuery *pushQuery = [PFInstallation query];
+            [pushQuery whereKey:@"user" equalTo:dealerUser];
+            NSString *message = @"You're the dealer now. Submit a photo";
+            [PFPush sendPushMessageToQueryInBackground:pushQuery withMessage:message];
+            
+            [self createWordsForCurrentRound];
+            
+        }
         
     }];
     
@@ -535,8 +605,16 @@
     self.roundWordsCounter = 0;
     
     // Query all words set words for next round
-    PFQuery *words = [PFQuery queryWithClassName:kParseClassWord];
-    [words findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+    PFQuery *queryWords = [PFQuery queryWithClassName:kParseClassWord];
+    [queryWords setLimit:1000];
+    [queryWords findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
+        if (error) {
+            
+            NSLog(@"%@", [error localizedDescription]);
+            
+            self.isLoading = NO;
+        }
         
         NSMutableArray *words = [objects mutableCopy];
         
@@ -550,10 +628,17 @@
             PFRelation *wordsRelatoin = [roundWords relationforKey:@"words"];
             for (int i = 0; i < NUMBEROFWORDS; i++) {
                 
-                NSUInteger wordCount = words.count;
-                NSUInteger randomIndex = arc4random() %  wordCount;
-                [wordsRelatoin addObject:[words objectAtIndex:randomIndex]];
-                [words removeObjectAtIndex:randomIndex];
+                //NSUInteger wordCount = words.count;
+                //NSUInteger randomIndex = arc4random() %  wordCount;
+                
+                int lowerBound = 0;
+                int upperBound = words.count - 1;
+                int rndValue = lowerBound + arc4random() % (upperBound - lowerBound);
+                
+                NSLog(@"rndVal: %d", rndValue);
+                
+                [wordsRelatoin addObject:[words objectAtIndex:rndValue]];
+                [words removeObjectAtIndex:rndValue];
                 
                 
             }
@@ -563,11 +648,20 @@
             
             [roundWords saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
                 
+                if (error) {
+                    
+                    NSLog(@"%@", [error localizedDescription]);
+                    
+                    self.isLoading = NO;
+                }
+                
                 if (success) {
                 
                     self.roundWordsCounter++;
                     
                     if (self.roundWordsCounter == self.gameUsers.count) {
+                        
+                        self.isLoading = NO;
                         
                         // New Round Created
                         [self getGameStatus];
@@ -602,6 +696,7 @@
             NSString *theWord = [word objectForKey:@"word"];
             
             item = [[UzysSMMenuItem alloc] initWithTitle:theWord image:[UIImage imageNamed:@"888-checkmark"] action:^(UzysSMMenuItem *item) {
+                
                 NSLog(@"Item: %@ menuState : %d", item , blockSelf.wordsMenu.menuState);
                 
             }];
@@ -612,21 +707,16 @@
     
     [tmpWorsArray addObject:item];
     
-    
-    NSUInteger statusbarHeight = self.navigationController.navigationBar.frame.size.height;
-    if(IS_IOS7)
-        statusbarHeight += 20;
-    
+    [self.wordsMenu removeFromSuperview];
     
     self.wordsMenu = [[UzysSlideMenu alloc] initWithItems:tmpWorsArray];
-    
-    self.wordsMenu.frame = CGRectMake(self.wordsMenu.frame.origin.x, self.wordsMenu.frame.origin.y+ statusbarHeight, self.wordsMenu.frame.size.width, self.wordsMenu.frame.size.height);
+    self.wordsMenu.frame = CGRectMake(0, 0, self.wordsMenu.frame.size.width, self.wordsMenu.frame.size.height);
     
     self.wordsMenu.hidden = NO;
+    self.imageWrapperView.hidden = NO;
     
-    [self.view addSubview:self.wordsMenu];
+    [self.imageWrapperView addSubview:self.wordsMenu];
     
-    [self.wordsMenu toggleMenu];
     [self.wordsMenu toggleMenu];
     
 }
@@ -643,6 +733,7 @@
         NSString *theWord = [word objectForKey:@"word"];
 
         UzysSMMenuItem *item1 = [[UzysSMMenuItem alloc] initWithTitle:theWord image:nil action:^(UzysSMMenuItem *item) {
+            
             NSLog(@"Item: %@ menuState : %d", item , blockSelf.wordsMenu.menuState);
             self.selectedWord = [self.currentGameUserWords objectAtIndex:tag];
             NSLog(@"Selected Word: %@", [self.selectedWord objectForKey:@"word"]);
@@ -655,19 +746,15 @@
         
     }
     
-    
-    NSUInteger statusbarHeight = self.navigationController.navigationBar.frame.size.height;
-    if(IS_IOS7)
-        statusbarHeight += 20;
-    
-    
+    [self.wordsMenu removeFromSuperview];
+
     self.wordsMenu = [[UzysSlideMenu alloc] initWithItems:tmpWorsArray];
-    
-    self.wordsMenu.frame = CGRectMake(self.wordsMenu.frame.origin.x, self.wordsMenu.frame.origin.y+ statusbarHeight, self.wordsMenu.frame.size.width, self.wordsMenu.frame.size.height);
+    self.wordsMenu.frame = CGRectMake(0, 0, self.wordsMenu.frame.size.width, self.wordsMenu.frame.size.height);
     
     self.wordsMenu.hidden = NO;
+    self.imageWrapperView.hidden = NO;
     
-    [self.view addSubview:self.wordsMenu];
+    [self.imageWrapperView addSubview:self.wordsMenu];
     
     [self.wordsMenu toggleMenu];
     
@@ -683,14 +770,16 @@
     int tag = 0;
     for (PFObject *wordSubmitted in self.currentRoundWordsSubmitted) {
         
-        //NSString *theWord = [word objectForKey:@"word"];
         PFObject *word = [wordSubmitted objectForKey:@"word"];
         NSString *theWord = [word objectForKey:@"word"];
         
         UzysSMMenuItem *item = [[UzysSMMenuItem alloc] initWithTitle:theWord image:nil action:^(UzysSMMenuItem *item) {
+            
             NSLog(@"Item: %@ menuState : %d", item , blockSelf.wordsMenu.menuState);
             self.currentGameUserWinner = [[self.currentRoundWordsSubmitted objectAtIndex:tag] objectForKey:@"gameUser"];
+            self.selectedWord = [[self.currentRoundWordsSubmitted objectAtIndex:tag] objectForKey:@"word"];
             NSLog(@"Selected Current Game User %@", self.currentGameUserWinner);
+            
             
         }];
         
@@ -700,79 +789,125 @@
         
     }
     
-    
-    NSUInteger statusbarHeight = self.navigationController.navigationBar.frame.size.height;
-    if(IS_IOS7)
-        statusbarHeight += 20;
+    [self.wordsMenu removeFromSuperview];
     
     self.wordsMenu = [[UzysSlideMenu alloc] initWithItems:tmpWorsArray];
-    
-    self.wordsMenu.frame = CGRectMake(self.wordsMenu.frame.origin.x, self.wordsMenu.frame.origin.y+ statusbarHeight, self.wordsMenu.frame.size.width, self.wordsMenu.frame.size.height);
+    self.wordsMenu.frame = CGRectMake(0, 0, self.wordsMenu.frame.size.width, self.wordsMenu.frame.size.height);
     
     self.wordsMenu.hidden = NO;
+    self.imageWrapperView.hidden = NO;
     
-    [self.view addSubview:self.wordsMenu];
+    [self.imageWrapperView addSubview:self.wordsMenu];
     
     [self.wordsMenu toggleMenu];
+     
 }
 
 - (void) submitSelectedWord {
     
-    PFObject *roundWordSubmitted = [PFObject objectWithClassName:kParseClassRoundWordSubmitted];
-    [roundWordSubmitted setObject:self.selectedWord forKey:@"word"];
-    [roundWordSubmitted setObject:self.currentRound forKey:@"round"];
-    [roundWordSubmitted setObject:self.currentGameUser forKey:@"gameUser"];
+    if (self.selectedWord != nil) {
     
-    [roundWordSubmitted saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
-       
-        if (success) {
-            
-            NSLog(@"Word Submited");
-            
-            [self.wordsMenu removeFromSuperview];
-            
-            [self getGameStatus];
-        }
+        PFObject *roundWordSubmitted = [PFObject objectWithClassName:kParseClassRoundWordSubmitted];
+        [roundWordSubmitted setObject:self.selectedWord forKey:@"word"];
+        [roundWordSubmitted setObject:self.currentRound forKey:@"round"];
+        [roundWordSubmitted setObject:self.currentGameUser forKey:@"gameUser"];
         
+        [roundWordSubmitted saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+           
+            if (success) {
+                
+                NSLog(@"Word Submited");
+                
+                // Check for number of words submitted - Send Push Note if all are submitted
+                PFQuery *queryRoundWords = [PFQuery queryWithClassName:kParseClassRoundWordSubmitted];
+                [queryRoundWords whereKey:@"round" equalTo:self.currentRound];
+                
+                [queryRoundWords findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                    
+                    if (objects.count == (self.gameUsers.count - 1)) {
+                        
+                        PFUser *dealerUser = [self.currentRoundDealer objectForKey:@"user"];
+                        
+                        PFQuery *pushQuery = [PFInstallation query];
+                        [pushQuery whereKey:@"user" equalTo:dealerUser];
+                        NSString *message = @"All words submitted.  Choose an answer";
+                        [PFPush sendPushMessageToQueryInBackground:pushQuery withMessage:message];
+                        
+                        
+                    }
+                    
+                    [self getGameStatus];
+                    
+                    
+                }];
+                
+                
+            }
+            
     }];
+        
+    }
 
 }
 
 - (void) submitSelectedAnswer {
     
-    [self.currentRound setObject:self.currentGameUserWinner forKey:@"winner"];
-    
-    [self.currentRound saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+    if (self.currentGameUserWinner != nil) {
         
-        if (success) {
+        [self.currentRound setObject:self.currentGameUserWinner forKey:@"winner"];
+        
+        [self.currentRound saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
             
-            NSLog(@"Answer Subbmited");
-            
-            // Update score value for current game user winner
-            NSNumber *score = [self.currentGameUserWinner objectForKey:@"score"];
-            int s = [score intValue];
-            s++;
-            
-            [self.currentGameUserWinner setObject:[NSNumber numberWithInt:s] forKey:@"score"];
-            
-            [self.currentGameUserWinner saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+            if (success) {
                 
-                if (success) {
-                    
-                    [self createNewRound];
-                    
-                }
+                NSLog(@"Answer Submited");
                 
-            }];
-            
+                // Update score value for current game user winner
+                NSNumber *score = [self.currentGameUserWinner objectForKey:@"score"];
+                int s = [score intValue];
+                s++;
+                
+                [self.currentGameUserWinner setObject:[NSNumber numberWithInt:s] forKey:@"score"];
+                
+                [self.currentGameUserWinner saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
+                    
+                    if (success) {
+                        
+                        for (PFObject *gameUser in self.gameUsers) {
+                            
+                            PFUser *user = [gameUser objectForKey:@"user"];
+                            NSString *dealer = [self.currentGameUser objectForKey:@"name"];
+                            
+                            if (![gameUser.objectId isEqualToString:self.currentGameUser.objectId]) {
+                            
+                                PFQuery *pushQuery = [PFInstallation query];
+                                [pushQuery whereKey:@"user" equalTo:user];
+                                NSString *message = [NSString stringWithFormat:@"%@ chose %@", dealer, [self.selectedWord objectForKey:@"word"]];
+                                [PFPush sendPushMessageToQueryInBackground:pushQuery withMessage:message];
+                                
+                            }
+                            
+                            
+                        }
+                        
+                        [self createNewRound];
+                        
+                    }
+                    
+                }];
+                
 
-        }
+            }
+            
+        }];
         
-    }];
+    }
     
 }
 
 - (void) submitPhoto {
+    
+    self.isLoading = YES;
     
     NSLog(@"Uploading Photo ... ");
     
@@ -792,16 +927,43 @@
             [self.currentRound saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
                 
                 if (success) {
+                    
+                    for (PFObject *gameUser in self.gameUsers) {
+                        
+                        PFUser *user = [gameUser objectForKey:@"user"];
+                        NSString *dealer = [self.currentRoundDealer objectForKey:@"name"];
+                        
+                        if (![gameUser.objectId isEqualToString:self.currentGameUser.objectId]) {
+                            
+                            PFQuery *pushQuery = [PFInstallation query];
+                            [pushQuery whereKey:@"user" equalTo:user];
+                            NSString *message = [NSString stringWithFormat:@"%@ submitted a photo", dealer];
+                            [PFPush sendPushMessageToQueryInBackground:pushQuery withMessage:message];
+                            
+                        }
+                        
+                    }
 
                     NSLog(@"Image Uploaded Successfully");
                     self.labelUploadImageStatus.text = @"Success";
                     self.progressView.hidden = YES;
                     self.imageViewCheckmark.hidden = NO;
-                    [self createWordsForCurrentRound];
+                    self.isLoading = NO;
+                    
+                    [self getGameStatus];
                     
                 }
                 
             }];
+            
+        } else if (error) {
+            
+            NSLog(@"Image Upload Failed: %@", [error localizedDescription]);
+            self.labelUploadImageStatus.text = @"Upload Failed";
+            self.progressView.hidden = YES;
+            self.isLoading = NO;
+            
+            [self getGameStatus];
             
         }
     
@@ -843,7 +1005,8 @@
         
         UIImage *image = info[UIImagePickerControllerOriginalImage];
         
-        self.imageView.hidden = NO;
+        self.imageWrapperView.hidden = NO;
+        self.wordsMenu.hidden = YES;
         self.tableView.hidden = YES;
         [self.imageView setImage:image];
         
@@ -859,7 +1022,8 @@
 - (void) imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     
     [self dismissViewControllerAnimated:YES completion:nil];
-
+    
+    [self updateActionButton];
 }
 
 - (void) imageTapped:(id)sender {
@@ -868,8 +1032,7 @@
     
     if (self.nextAction == WAITING) {
     
-        self.imageView.hidden = YES;
-        self.wordsMenu.hidden = YES;
+        self.imageWrapperView.hidden = YES;
         self.tableView.hidden = NO;
     
     }
@@ -917,7 +1080,6 @@
         
         cell.labelName.text = name;
         
-        
     }
     
     return cell;
@@ -927,16 +1089,21 @@
     
     PFObject *gameUser = [self.gameUsers objectAtIndex:indexPath.row];
     PFObject *gameUserDealer = [self.currentRound objectForKey:@"dealer"];
+    PFFile *pic = [self.currentRound objectForKey:@"pic"];
     
     if (self.nextAction == WAITING) {
         
         if ([gameUser.objectId isEqualToString:gameUserDealer.objectId]) {
         
-            self.tableView.hidden = YES;
-            self.imageView.hidden = NO;
+            if (pic != NULL) {
             
-            if (self.wordsMenu.pItems.count) {
-                self.wordsMenu.hidden = NO;
+                self.tableView.hidden = YES;
+                self.imageWrapperView.hidden = NO;
+                
+                if (self.wordsMenu.pItems.count) {
+                    self.wordsMenu.hidden = NO;
+                }
+                
             }
             
         }
@@ -945,6 +1112,7 @@
 
     
 }
+
 
 
 - (void)didReceiveMemoryWarning

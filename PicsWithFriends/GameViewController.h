@@ -15,6 +15,16 @@
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 
+@property (weak, nonatomic) IBOutlet UIView *imageWrapperView;
+@property (weak, nonatomic) IBOutlet UIImageView *imageView;
+
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *buttonAction;
+
+@property (weak, nonatomic) IBOutlet UIView *uploadImageView;
+@property (weak, nonatomic) IBOutlet UILabel *labelUploadImageStatus;
+@property (weak, nonatomic) IBOutlet UIProgressView *progressView;
+@property (weak, nonatomic) IBOutlet UIImageView *imageViewCheckmark;
+
 @property (strong, nonatomic) PFObject *game;
 @property (strong, nonatomic) NSMutableArray *gameUsers;
 @property (strong, nonatomic) PFObject *currentGameUser;
@@ -25,21 +35,12 @@
 @property (strong, nonatomic) PFObject *selectedWord;
 @property (strong, nonatomic) PFObject *currentGameUserWinner;
 
-@property (weak, nonatomic) IBOutlet UIView *uploadImageView;
-@property (weak, nonatomic) IBOutlet UILabel *labelUploadImageStatus;
-@property (weak, nonatomic) IBOutlet UIProgressView *progressView;
-@property (weak, nonatomic) IBOutlet UIImageView *imageViewCheckmark;
-
+@property BOOL isLoading;
 
 @property int roundWordsCounter;
-
 @property Action nextAction;
 
-@property (weak, nonatomic) IBOutlet UIBarButtonItem *buttonAction;
-@property (weak, nonatomic) IBOutlet UIImageView *imageView;
-
 - (IBAction) actionButtonTouchedHandler:(id)sender;
-- (IBAction) refresh:(id)sender;
 - (void) imageTapped:(id)sender;
 
 @end

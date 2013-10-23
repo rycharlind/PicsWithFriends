@@ -1,8 +1,10 @@
-static NSString *kActionWaiting = @"Waiting";
+static NSString *kActionWaiting = @"Refresh";
 static NSString *kActionSubmitWord = @"Submit Word";
 static NSString *kActionSubmitAnswer = @"Submit Answer";
 static NSString *kActionChoosePhoto = @"Choose Photo";
 static NSString *kActionSubmitPhoto = @"Submit Photo";
+
+static NSString *kPostNoteGetStatus = @"GetGameStatus";
 
 typedef enum actionTypes {
     

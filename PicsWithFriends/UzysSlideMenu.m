@@ -55,7 +55,6 @@
     _scrollView.contentSize = CGSizeMake(menuWidth, menuHeight);
     [self addSubview:_scrollView];
     
-
     [self.pItems enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         
         UzysSMMenuItemView *itemView = [[[NSBundle mainBundle] loadNibNamed:@"UzysSMMenuItemView" owner:self options:nil] lastObject];
@@ -69,12 +68,13 @@
         itemView.userInteractionEnabled = YES;
         itemView.tag = itemView.item.tag;
         itemView.delegate = self;
-
+        
         [self.scrollView addSubview:itemView];
         [self.scrollView sendSubviewToBack:itemView];
         [self.itemViews addObject:itemView];
         
     }];
+    
 }
 
 
@@ -129,7 +129,7 @@
 
 #pragma mark - MenuState
 
--(void)showIconMenu:(BOOL)animation
+-(void) showIconMenu:(BOOL)animation
 {
     ah__block typeof(self) blockSelf = self;
     void(^itemViewsSettingBlock)(void) = ^{
@@ -177,7 +177,7 @@
 
     }
 }
--(void)showMainMenu:(BOOL)animation
+-(void) showMainMenu:(BOOL)animation
 {
     ah__block typeof(self) blockSelf = self;
     void(^itemViewsSettingBlock)(void) = ^{

@@ -8,6 +8,8 @@
 
 #import "MenuViewController.h"
 #import "GameViewController.h"
+#import "MenuTableViewCell.h"
+#import "UIImageView+AFNetworking.h"
 #import "Constants.h"
 
 @interface MenuViewController () <UIActionSheetDelegate, FBFriendPickerDelegate, FBViewControllerDelegate>
@@ -15,60 +17,167 @@
 @end
 
 @implementation MenuViewController
-@synthesize games, invitedFriendsCounter;
+@synthesize tableView;
+@synthesize games, invitedFriendsCounter, gamesCounter;
 @synthesize isLoading;
 
 
 // Ideas
 // Display who invited you to the game (or basically who created it) - this way the user knows who sent the invite even if they did not receive it from facebook
 
-- (id)initWithStyle:(UITableViewStyle)style
-{
-    self = [super initWithStyle:style];
-    if (self) {
-        // Custom initialization
-        
-    }
-    return self;
-}
-
-- (void)viewDidLoad
+- (void) viewDidLoad
 {
     [super viewDidLoad];
+    [self.navigationItem setHidesBackButton:YES animated:NO];
+    self.navigationController.navigationBar.hidden = NO;
+    
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:60 target:self selector:@selector(queryGames) userInfo:nil repeats:YES];
 
 }
 
 - (void) viewDidAppear:(BOOL)animated {
-    
+
+    self.isLoading = NO;
     [self queryGames];
+
     
 }
 
 - (void) queryGames {
     
-    self.isLoading = YES;
+    NSLog(@"queryGames");
     
-    self.games = [NSMutableArray new];
+    if (!self.isLoading) {
+        
+        self.isLoading = YES;
     
-    PFQuery *queryByUser = [PFQuery queryWithClassName:kParseClassGameUser]; // Query by Current User
-    [queryByUser whereKey:@"user" equalTo:[PFUser currentUser]];
-    
-    PFQuery *queryByFacebookId = [PFQuery queryWithClassName:kParseClassGameUser];
-    [queryByFacebookId whereKey:@"facebookId" equalTo:[[PFUser currentUser] objectForKey:@"facebookId"]]; // Query by FacebookId is current user is not set yet
-     
-    PFQuery *query = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:queryByUser, queryByFacebookId, nil]];
-    [query includeKey:@"game"];
-    [query orderByDescending:@"createdAt"];
-    
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        PFQuery *queryByUser = [PFQuery queryWithClassName:kParseClassGameUser]; // Query by Current User
+        [queryByUser whereKey:@"user" equalTo:[PFUser currentUser]];
         
-        self.games = objects;
+        PFQuery *queryByFacebookId = [PFQuery queryWithClassName:kParseClassGameUser];
+        [queryByFacebookId whereKey:@"facebookId" equalTo:[[PFUser currentUser] objectForKey:@"facebookId"]]; // Query by FacebookId is current user is not set yet
+         
+        PFQuery *query = [PFQuery orQueryWithSubqueries:[NSArray arrayWithObjects:queryByUser, queryByFacebookId, nil]];
+        [query includeKey:@"game"];
+        [query orderByDescending:@"createdAt"];
         
-        [self.tableView reloadData];
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) { //Query GameUsers for Current User
+            
+            if (error) {
+                
+                NSLog(@"%@", [error localizedDescription]);
+                
+                self.isLoading = NO;
+            }
+            
+            self.games = [objects mutableCopy];
+            self.gamesCounter = 0;
+            
+            for (PFObject *gameUser in self.games) {
+                
+                PFObject *game = [gameUser objectForKey:@"game"];
+                
+                PFQuery *query = [PFQuery queryWithClassName:kParseClassGameUser];
+                [query whereKey:@"game" equalTo:game];
+                
+                // Query Game Users for the game
+                [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) { //Query GameUser for each Game
+                    
+                    if (error) {
+                        
+                        NSLog(@"%@", [error localizedDescription]);
+                        
+                        self.isLoading = NO;
+                    }
+                   
+                    NSArray *gameUsers = objects;
+                    
+                    if (gameUsers.count) {
+                        
+                        // Iterate through each game object, check the id
+                        for (int i = 0; i < self.games.count; i++) {
+                            
+                            PFObject *tmpGameUser = [self.games objectAtIndex:i];
+                            PFObject *tmpGame = [tmpGameUser objectForKey:@"game"];
+                            
+                            if ([tmpGame.objectId isEqualToString:game.objectId]) {
+                                
+                                [[self.games objectAtIndex:i] setValue:gameUsers forKey:@"players"];
+                            
+                            }
+                            
+                        }
+                        
+                        
+                            
+                        self.gamesCounter = 0;
+                        // Query the current round to get the current dealer
+                        PFQuery *queryRound = [PFQuery queryWithClassName:kParseClassRound];
+                        [queryRound whereKey:@"game" equalTo:game];
+                        [queryRound includeKey:@"dealer"];
+                        [queryRound orderByDescending:@"createdAt"];
+                        [queryRound setLimit:1];
+                        
+                        [queryRound findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *errror) { // Query current round for each Game
+                            
+                            if (error) {
+                                
+                                NSLog(@"%@", [error localizedDescription]);
+                                
+                                self.isLoading = NO;
+                            }
+                            
+                            if (objects.count) {
+                                
+                                PFObject *currentRound = [objects objectAtIndex:0];
+                                PFObject *currentRoundDealer = [currentRound objectForKey:@"dealer"];
+                                
+                                // Iterate through each game object, check the id
+                                for (int i = 0; i < self.games.count; i++) {
+                                    
+                                    PFObject *tmpGameUser = [self.games objectAtIndex:i];
+                                    PFObject *tmpGame = [tmpGameUser objectForKey:@"game"];
+                                    
+                                    if ([tmpGame.objectId isEqualToString:game.objectId]) {
+                                        
+                                        [[self.games objectAtIndex:i] setValue:currentRoundDealer forKey:@"dealer"];
+                                        
+                                    }
+                                    
+                                }
+                                
+                                self.gamesCounter++;
+                                if (self.gamesCounter == self.games.count) {
+                                 
+                                    NSLog(@"%@", self.games);
+                                    self.isLoading = NO;
+                                    [self.tableView reloadData];
+                                    
+                                    
+                                }
+                                
+                                
+                                
+                            }
+                            
+                            
+                            
+                        }];
+                        
+                    }
+                        
+                        
+                    
+                    
+                    
+                }];
+                
+            }
+            
+        }];
         
-        self.isLoading = NO;
-        
-    }];
+    }
+
 
 }
 
@@ -80,7 +189,7 @@
 
 - (void) displayOptionsActionSheet {
     
-    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Logout", @"Create Game", nil];
+    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Logout", @"Refresh", nil];
     [actionSheet showInView:self.view];
     
 }
@@ -92,9 +201,11 @@
         case 0: // Logut
             [self.navigationController popToRootViewControllerAnimated:YES];
             break;
-
+        
         case 1:
-            [self showFacebookFriendsSelector];
+            [self queryGames];
+            break;
+            
         default:
             break;
     }
@@ -106,15 +217,10 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     // Return the number of sections.
-    return 2;
+    return 1;
 }
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    
-    if (section == 0) {
-        
-        return 1;
-    }
     
     return self.games.count;
 }
@@ -122,20 +228,21 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     static NSString *CellIdentifier = @"Cell";
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
+    MenuTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
     
-    if (indexPath.section == 0) {
-        
-        cell.textLabel.text = @"Create Game";
+    PFObject *gameUser = [self.games objectAtIndex:indexPath.row];
+    PFObject *game = [gameUser objectForKey:@"game"];
+    PFObject *gameDealer = [[self.games objectAtIndex:indexPath.row] objectForKey:@"dealer"];
+    NSString *facebookId = [gameDealer objectForKey:@"facebookId"];
     
-    } else {
-        
-        PFObject *gameUser = [self.games objectAtIndex:indexPath.row];
-        PFObject *game = [gameUser objectForKey:@"game"];
-        
-        cell.textLabel.text = [NSString stringWithFormat:@"Game: %@", game.objectId];
+    NSArray *players = [[self.games objectAtIndex:indexPath.row] objectForKey:@"players"];
     
-    }
+    cell.labelDealer.text = [NSString stringWithFormat:@"%@ (D)", [gameDealer objectForKey:@"name"]];
+    cell.labelOtherPlayers.text = [self getPlayersStringFromPlayers:players];
+    
+    NSString *profilePictureUrl = [NSString stringWithFormat:@"%@/%@/picture?%@", kFacebookGraph, facebookId, kFacebookGraphPictureSize100x100];
+    [cell.imageView setImageWithURL:[NSURL URLWithString:profilePictureUrl] placeholderImage:[UIImage imageNamed:@"facebook_profile"]];
+    
     
     return cell;
 }
@@ -143,22 +250,21 @@
 - (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
     if (!self.isLoading) {
-    
-        if (indexPath.section == 0) {
             
-            [self showFacebookFriendsSelector]; // Callback method from the Facebook Friend picker will call the createGameWithFriends method
-            
-        } else {
-            
-            PFObject *gameUser = [self.games objectAtIndex:indexPath.row];
-            PFObject *game = [gameUser objectForKey:@"game"];
-            
-            [self pushToGameView:game];
-            
-        }
+        PFObject *gameUser = [self.games objectAtIndex:indexPath.row];
+        PFObject *game = [gameUser objectForKey:@"game"];
+        
+        [self pushToGameView:game];
+        
         
     }
 
+}
+
+- (NSString*) getPlayersStringFromPlayers:(NSArray*)players {
+    
+    return [NSString stringWithFormat:@"%d other players", (players.count - 1)];
+    
 }
 
 - (void) pushToGameView:(PFObject*)game {
@@ -167,6 +273,12 @@
     gameViewController.game = game;
     [self.navigationController pushViewController:gameViewController animated:YES];
 
+}
+
+- (IBAction) createGameButtonHandler:(id)sender {
+    
+    [self showFacebookFriendsSelector];
+    
 }
 
 - (void) createGameWtihFriends:(NSArray*)friends {
@@ -246,7 +358,8 @@
                                 
                                 PFQuery *pushQuery = [PFInstallation query];
                                 [pushQuery whereKey:@"user" equalTo:user];
-                                [PFPush sendPushMessageToQueryInBackground:pushQuery withMessage:@"You have been invited to play"];
+                                NSString *message = [NSString stringWithFormat:@"%@ invited you to a game", facebookName];
+                                [PFPush sendPushMessageToQueryInBackground:pushQuery withMessage:message];
                                 
                             }
                 
@@ -279,7 +392,9 @@
                     if (error) {
                         
                         NSLog(@"%@", [error localizedDescription]);
+                    
                     }
+                
                 }
                 
                 
@@ -324,9 +439,23 @@
     
     NSLog(@"%@", friendPicker.selection);
     
-    [self createGameWtihFriends:friendPicker.selection];
+    if (friendPicker.selection.count > 1 && friendPicker.selection.count < 8) {
+        
+        [self createGameWtihFriends:friendPicker.selection];
+        [self dismissViewControllerAnimated:YES completion:nil];
+        
+    } else if (friendPicker.selection.count < 2) {
+        
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Need more people" message:@"You must have at least 3 people in a game" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alertView show];
+        
+    } else if (friendPicker.selection.count > 7) {
+        
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Too many people" message:@"You cannot have more than 8 people in a game" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alertView show];
+        
+    }
     
-    [self dismissViewControllerAnimated:YES completion:nil];
 
 }
 
@@ -370,7 +499,7 @@
     
 }
 
-- (void)didReceiveMemoryWarning
+- (void) didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.

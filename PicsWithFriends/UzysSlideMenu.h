@@ -28,4 +28,7 @@ typedef enum _UzysSMState {
 - (void)openIconMenu;
 
 - (CGRect)getMainIconFrame:(UIView *)view;
+
+- (void) setup;
+- (void) addWords;
 @end

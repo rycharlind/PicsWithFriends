@@ -72,17 +72,15 @@ didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)newDeviceToken {
     NSLog(@"Set device token");
     
     self.deviceToken = newDeviceToken;
-    
-    /*
-    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
-    [currentInstallation setDeviceTokenFromData:newDeviceToken];
-    [currentInstallation saveInBackground];
-    */
+
 }
 
 - (void)application:(UIApplication *)application
 didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    
     [PFPush handlePush:userInfo];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kPostNoteGetStatus object:nil];
+    
 }
 
 
