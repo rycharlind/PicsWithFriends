@@ -11,7 +11,7 @@
 #import "UzysSlideMenu.h"
 #import "Constants.h"
 
-@interface GameViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@interface GameViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UIAlertViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 

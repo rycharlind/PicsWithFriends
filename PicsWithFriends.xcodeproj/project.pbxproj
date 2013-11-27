@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		541BDDEB18245533002926F5 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 541BDDEA18245533002926F5 /* AssetsLibrary.framework */; };
 		542AA1F9181763C0004AE936 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 542AA1F8181763C0004AE936 /* Parse.framework */; };
 		542B1C5917FB766B0087C5D1 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 542B1C5817FB766B0087C5D1 /* AudioToolbox.framework */; };
 		542B1C5B17FB76720087C5D1 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 542B1C5A17FB76720087C5D1 /* CFNetwork.framework */; };
@@ -78,6 +79,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		541BDDEA18245533002926F5 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
 		542AA1F8181763C0004AE936 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parse.framework; sourceTree = "<group>"; };
 		542B1C5817FB766B0087C5D1 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		542B1C5A17FB76720087C5D1 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
@@ -177,6 +179,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				541BDDEB18245533002926F5 /* AssetsLibrary.framework in Frameworks */,
 				542B1C6517FB76D60087C5D1 /* SystemConfiguration.framework in Frameworks */,
 				E3D29ED717FFC71100215F79 /* FacebookSDK.framework in Frameworks */,
 				542B1C6317FB76C10087C5D1 /* StoreKit.framework in Frameworks */,
@@ -260,6 +263,7 @@
 		54C2663217F68B6000C22699 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				541BDDEA18245533002926F5 /* AssetsLibrary.framework */,
 				542AA1F8181763C0004AE936 /* Parse.framework */,
 				542B1C5E17FB76970087C5D1 /* libz.1.1.3.dylib */,
 				54C2667717F68BF400C22699 /* libsqlite3.dylib */,

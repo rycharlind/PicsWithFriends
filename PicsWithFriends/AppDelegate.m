@@ -22,7 +22,17 @@
 {
     // Override point for customization after application launch.
     
-    [Parse setApplicationId:kParseAppId clientKey:kParseClientKey];
+    BOOL dev = YES; // CHANGE THIS TO 'NO' BEFORE SUBMITTING TO APP STORE
+    
+    if (dev) {
+        [self devWarning];
+        [Parse setApplicationId:kParseAppIdDev clientKey:kParseClientKeyDev];
+    }
+    else
+        [Parse setApplicationId:kParseAppId clientKey:kParseClientKey];
+        
+    
+    
     [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
     
     [application registerForRemoteNotificationTypes:UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound];
@@ -31,7 +41,24 @@
 
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application
+- (void) devWarning {
+    
+    NSLog(@"###################### WARNING WARNING WARNING WARNING WARNING ######################");
+    NSLog(@"###################### WARNING WARNING WARNING WARNING WARNING ######################");
+    NSLog(@"###################### WARNING WARNING WARNING WARNING WARNING ######################");
+    NSLog(@"  ");
+    NSLog(@"###################### YOU ARE USING THE PARSE DEVELOPMENT APP ######################");
+    NSLog(@"  ");
+    NSLog(@"###################### WARNING WARNING WARNING WARNING WARNING ######################");
+    NSLog(@"###################### WARNING WARNING WARNING WARNING WARNING ######################");
+    NSLog(@"###################### WARNING WARNING WARNING WARNING WARNING ######################");
+    
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Warning" message:@"You are using the Parse Development App. Do not submit to App Store." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    [alert show];
+    
+}
+
+- (void) applicationWillResignActive:(UIApplication *)application
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.

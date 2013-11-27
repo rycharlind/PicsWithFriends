@@ -123,12 +123,17 @@
                     [[PFUser currentUser] setObject:[result objectForKey:@"name"] forKey:@"name"];
                     [[PFUser currentUser] saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
                         
-                        [self updateGameFacebookIdsWithUser];
                         [self activeFacebookSession];
+                        [self updateUIControlsForIsLoggedIn:YES];
+                        [self pushToMenu];
                         
                         
                     }];
                 
+                } else {
+                    
+                    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Errir" message:[error localizedFailureReason] delegate:self cancelButtonTitle:@"Ok" otherButtonTitles:nil];
+                    [alertView show];
                 }
             
             }];
@@ -140,47 +145,7 @@
             
             [self activeFacebookSession];
             [self updateUIControlsForIsLoggedIn:YES];
-            [self updateGameFacebookIdsWithUser];
-            
-        }
-        
-    }];
-    
-}
-
-- (void) updateGameFacebookIdsWithUser {
-    
-    NSLog(@"update fbIDs");
-    
-    self.gameUsersCounter = 0;
-    
-    PFQuery *queryGameUser = [PFQuery queryWithClassName:kParseClassGameUser];
-    
-    [queryGameUser whereKey:@"facebookId" equalTo:[[PFUser currentUser] objectForKey:@"facebookId"]];
-    
-    [queryGameUser findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        
-        for (PFObject *gameUser in objects) {
-            
-            [gameUser setObject:[PFUser currentUser] forKey:@"user"];
-            
-            [gameUser saveInBackgroundWithBlock:^(BOOL success, NSError *error) {
-                
-                if (success) {
-                
-                    self.gameUsersCounter++;
-                    
-                    if (self.gameUsersCounter == objects.count) {
-                        
-                        [self pushToMenu];
-                        
-                    }
-                    
-                }
-                
-            }];
-            
-            
+            [self pushToMenu];
             
         }
         

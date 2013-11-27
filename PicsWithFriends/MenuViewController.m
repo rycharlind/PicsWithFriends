@@ -39,13 +39,12 @@
 
     self.isLoading = NO;
     [self queryGames];
-
     
 }
 
 - (void) queryGames {
     
-    NSLog(@"queryGames");
+    NSLog(@"queryGames - loading? %d", self.isLoading);
     
     if (!self.isLoading) {
         
@@ -61,7 +60,11 @@
         [query includeKey:@"game"];
         [query orderByDescending:@"createdAt"];
         
+        NSLog(@"sendQueryGames");
+        
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) { //Query GameUsers for Current User
+            
+            NSLog(@"queryGamesRetured");
             
             if (error) {
                 
@@ -73,105 +76,120 @@
             self.games = [objects mutableCopy];
             self.gamesCounter = 0;
             
-            for (PFObject *gameUser in self.games) {
+            if (self.games.count) {
                 
-                PFObject *game = [gameUser objectForKey:@"game"];
-                
-                PFQuery *query = [PFQuery queryWithClassName:kParseClassGameUser];
-                [query whereKey:@"game" equalTo:game];
-                
-                // Query Game Users for the game
-                [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) { //Query GameUser for each Game
+                NSLog(@"game count > 0");
+            
+                for (PFObject *gameUser in self.games) {
                     
-                    if (error) {
-                        
-                        NSLog(@"%@", [error localizedDescription]);
-                        
-                        self.isLoading = NO;
-                    }
-                   
-                    NSArray *gameUsers = objects;
+                    PFObject *game = [gameUser objectForKey:@"game"];
                     
-                    if (gameUsers.count) {
+                    PFQuery *query = [PFQuery queryWithClassName:kParseClassGameUser];
+                    [query whereKey:@"game" equalTo:game];
+                    
+                    // Query Game Users for the game
+                    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) { //Query GameUser for each Game
                         
-                        // Iterate through each game object, check the id
-                        for (int i = 0; i < self.games.count; i++) {
+                        NSLog(@"queryGameUsersReturned");
+                        
+                        if (error) {
                             
-                            PFObject *tmpGameUser = [self.games objectAtIndex:i];
-                            PFObject *tmpGame = [tmpGameUser objectForKey:@"game"];
+                            NSLog(@"%@", [error localizedDescription]);
                             
-                            if ([tmpGame.objectId isEqualToString:game.objectId]) {
+                            self.isLoading = NO;
+                        }
+                       
+                        NSArray *gameUsers = objects;
+                        
+                        if (gameUsers.count) {
+                            
+                            // Iterate through each game object, check the id
+                            for (int i = 0; i < self.games.count; i++) {
                                 
-                                [[self.games objectAtIndex:i] setValue:gameUsers forKey:@"players"];
-                            
+                                PFObject *tmpGameUser = [self.games objectAtIndex:i];
+                                PFObject *tmpGame = [tmpGameUser objectForKey:@"game"];
+                                
+                                if ([tmpGame.objectId isEqualToString:game.objectId]) {
+                                    
+                                    [[self.games objectAtIndex:i] setValue:gameUsers forKey:@"players"];
+                                
+                                }
+                                
                             }
+                            
+                            // Query the current round to get the current dealer
+                            PFQuery *queryRound = [PFQuery queryWithClassName:kParseClassRound];
+                            [queryRound whereKey:@"game" equalTo:game];
+                            [queryRound includeKey:@"dealer"];
+                            [queryRound orderByDescending:@"createdAt"];
+                            [queryRound setLimit:1];
+                            
+                            [queryRound findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *errror) { // Query current round for each Game
+                                
+                                NSLog(@"queryRoundReturned");
+                                
+                                if (error) {
+                                    
+                                    NSLog(@"%@", [error localizedDescription]);
+                                    
+                                    self.isLoading = NO;
+                                }
+                                
+                                if (objects.count) {
+                                    
+                                    NSLog(@"hasRoundObjects");
+                                    
+                                    PFObject *currentRound = [objects objectAtIndex:0];
+                                    PFObject *currentRoundDealer = [currentRound objectForKey:@"dealer"];
+                                    
+                                    // Iterate through each game object, check the id
+                                    for (int i = 0; i < self.games.count; i++) {
+                                        
+                                        PFObject *tmpGameUser = [self.games objectAtIndex:i];
+                                        PFObject *tmpGame = [tmpGameUser objectForKey:@"game"];
+                                        
+                                        if ([tmpGame.objectId isEqualToString:game.objectId]) {
+                                            
+                                            [[self.games objectAtIndex:i] setValue:currentRoundDealer forKey:@"dealer"];
+                                            
+                                        }
+                                        
+                                    }
+                                    
+                                    self.gamesCounter++;
+                                    
+                                    NSLog(@"gamesCounter: %d", self.gamesCounter);
+                                    NSLog(@"gamesCount: %d", self.games.count);
+                                    
+                                    if (self.gamesCounter == self.games.count) {
+                                     
+                                        NSLog(@"%@", self.games);
+                                        self.isLoading = NO;
+                                        [self.tableView reloadData];
+                                        
+                                        
+                                    }
+                                    
+                                    
+                                    
+                                }
+                                
+                                
+                                
+                            }];
                             
                         }
                         
                         
-                            
-                        self.gamesCounter = 0;
-                        // Query the current round to get the current dealer
-                        PFQuery *queryRound = [PFQuery queryWithClassName:kParseClassRound];
-                        [queryRound whereKey:@"game" equalTo:game];
-                        [queryRound includeKey:@"dealer"];
-                        [queryRound orderByDescending:@"createdAt"];
-                        [queryRound setLimit:1];
-                        
-                        [queryRound findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *errror) { // Query current round for each Game
-                            
-                            if (error) {
-                                
-                                NSLog(@"%@", [error localizedDescription]);
-                                
-                                self.isLoading = NO;
-                            }
-                            
-                            if (objects.count) {
-                                
-                                PFObject *currentRound = [objects objectAtIndex:0];
-                                PFObject *currentRoundDealer = [currentRound objectForKey:@"dealer"];
-                                
-                                // Iterate through each game object, check the id
-                                for (int i = 0; i < self.games.count; i++) {
-                                    
-                                    PFObject *tmpGameUser = [self.games objectAtIndex:i];
-                                    PFObject *tmpGame = [tmpGameUser objectForKey:@"game"];
-                                    
-                                    if ([tmpGame.objectId isEqualToString:game.objectId]) {
-                                        
-                                        [[self.games objectAtIndex:i] setValue:currentRoundDealer forKey:@"dealer"];
-                                        
-                                    }
-                                    
-                                }
-                                
-                                self.gamesCounter++;
-                                if (self.gamesCounter == self.games.count) {
-                                 
-                                    NSLog(@"%@", self.games);
-                                    self.isLoading = NO;
-                                    [self.tableView reloadData];
-                                    
-                                    
-                                }
-                                
-                                
-                                
-                            }
-                            
-                            
-                            
-                        }];
-                        
-                    }
-                        
-                        
+                    }];
                     
-                    
-                    
-                }];
+                }
                 
+            } else {
+                
+                NSLog(@"No gmaes queried");
+                self.isLoading = NO;
+            
             }
             
         }];
@@ -249,6 +267,8 @@
 
 - (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
+    NSLog(@"isLoading: %d", self.isLoading);
+    
     if (!self.isLoading) {
             
         PFObject *gameUser = [self.games objectAtIndex:indexPath.row];
@@ -277,10 +297,26 @@
 
 - (IBAction) createGameButtonHandler:(id)sender {
     
-    [self showFacebookFriendsSelector];
+    [self createGameWtihFriends:nil];
+    //[self showFacebookFriendsSelector];
     
 }
 
+- (void) createGameWtihFriends:(NSArray*)friends {
+    
+    NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:[NSArray arrayWithObjects:@"3423423534534", @"345345345345", nil], @"friends", nil];
+    
+    [PFCloud callFunctionInBackground:@"createGame" withParameters:params target:self selector:@selector(gameDidCreateWithResults:error:)];
+    
+}
+
+- (void) gameDidCreateWithResults:(NSArray *)results error:(NSError *)error {
+    
+    
+    
+}
+
+/*
 - (void) createGameWtihFriends:(NSArray*)friends {
 
     NSLog(@"Creating Game ...");
@@ -413,6 +449,7 @@
     }];
 
 }
+*/
 
 - (void) showFacebookFriendsSelector {
     

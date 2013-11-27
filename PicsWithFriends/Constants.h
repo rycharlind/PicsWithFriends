@@ -16,13 +16,22 @@ typedef enum actionTypes {
     
 } Action;
 
-// Parse App ID
+// PARSE PRODUCTION APP STRINGS
+// Parse App ID - PicsWithFriends
 static NSString *kParseAppId = @"XMzdxstKDF3DcEu63nyB4F7TSjEO8dt7165emViE";
-
-// Parse Client Key
+// Parse Client Key - PicsWithFriends
 static NSString *kParseClientKey = @"OLenYplqCxoLjfgBYq5KXtOcvUFcLaElZ1Z6kWCw";
 
-// Parse Cloud Url
+
+// PARSE DEVELOPMENT APP STRINGS
+// Parse App ID - PicsWithFriends
+static NSString *kParseAppIdDev = @"tdPmnifytqM7SIkV49t5dxnY5PwVR5qBSKdqoDzB";
+// Parse Client Key - PicsWithFriends
+static NSString *kParseClientKeyDev = @"aNifhkJgq1sxKXJwdfXYJkjjWkWaSChvayNyLTwZ";
+
+
+
+// Parse Cloud Url Example
 //https://api.parse.com/1/functions/setupRoundWords
 
 
